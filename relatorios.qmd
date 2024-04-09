@@ -1,0 +1,115 @@
+---
+title: '**Criando um relatório de Análise de Ações no Python**'
+#subtitle: ""
+abstract: "Neste texto mostramos que dá pra enterrar aquele seu relatório manual no Excel e automatizar toda a rotina de análise de dados usando o Python + Quarto. Mostramos um exemplo de relatório de ações com dados da ITSA4."
+author: "Luiz Henrique/Fernando da Silva"
+editor: visual
+lang: pt
+language: 
+  toc-title-document: '<a href="https://analisemacro.com.br/" target="_blank"><img src="https://analisemacro.com.br/wp-content/uploads/dlm_uploads/2021/10/logo_am.png" alt="Logotipo Análise Macro" width="150"></a>'
+format: 
+  html:
+    toc: true
+    code-fold: false
+    embed-resources: true
+    page-layout: full
+    fig-asp: 0.618
+    fig-width: 6
+    fig-height: 3
+    fig-dpi: 300
+    fig-align: center
+    df-print: tibble
+theme:
+  light: flatly
+  dark: darkly
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+<hr>
+
+A necessidade de criar relatórios para sumarizar e apresentar dados e análises é rotineira para quem trabalha na área de dados. Também é frequente o uso de ferramentas simples do tipo *point & click*, como Excel e Word, para produzir relatórios. Algo mais frequente ainda são problemas de reprodutibilidade e automatização que acabam acontecendo com o uso de tais ferramentas.
+
+Neste texto mostramos uma alternativa interessante para usuários de Python. Imagine escrever seu relatório, analisar e apresentar os dados com código de Python usando apenas uma interface, sem copia e cola e sem quebra galhos? A ferramenta Quarto proporciona exatamente isso, permitindo que o usuário desenvolva seu relatório mesclando texto, imagens, tabelas e códigos em um único documento fonte. No final, o usuário pode compilar o documento e gerar um PDF, um HTML, apresentação de slides, etc.
+
+A seguir demonstramos o fluxo de trabalho de usar o Quarto para produzir um relatório de exemplo com dados econômicos. Para saber mais veja o curso de [**Produção de Relatórios Automáticos usando Python**](https://analisemacro.com.br/curso/producao-de-relatorios-automaticos-usando-python/)**.**
+
+# Ferramentas
+
+Como mencionado, iremos utilizar o software Quarto, que permite criar diversos tipos de documentos. O interessante da ferramenta é a possibilidade integração com as linguagens de programação Python, R, Julia e Observable, bem como a integração com IDEs como Jupyter Notebook, VS Code e Rstudio, facilitando todo o processo de criação dos documentos para o usuário. Neste tutorial abordaremos a criação do documento usando o Python e o VS Code.
+
+Antes de construir a apresentação devemos obter a ferramenta Quarto conforme a IDE utilizada. Você pode realizar o download através do link <https://quarto.org/docs/get-started/> e integrar a ferramenta conforme a IDE de interesse em seus respectivos ícones.
+
+![](imgs/quarto.png)
+
+Para o caso do VS Code que usaremos neste tutorial, o processo pode ser mais simples. Basta buscar o software Quarto na aba de "Extensions" da ferramenta e realizar o download.
+
+![](imgs/vscode.png)
+
+# Construindo o relatório
+
+### Passo 01: **criar o arquivo do relatório**
+
+Basta abrir o VS Code ou interface de sua preferência e criar um arquivo “.qmd”. Este arquivo se chama Quarto e é a fonte do conteúdo e código que gera o relatório.
+
+Para isso, use a opção "Command Palette" na aba "View" (ctrl + shift + p) e selecione Quarto: New Document.
+
+![](imgs/passo01.png)
+
+## Passo 02: definir o título e cabeçalho
+
+Utilize os [parâmetros de YAML](https://quarto.org/docs/get-started/hello/vscode.html#yaml-options) para inserir título, subtítulo, autor, data e muito mais no seu relatório. Como exemplo, vamos criar um relatório de ação da ITSA4 e aqui definimos:
+
+![Parâmetros opcionais no cabeçalho do relatório](imgs/passo02.png){fig-align="center"}
+
+-   Título
+
+-   Subtítulo
+
+-   Nome do autor
+
+-   Data do relatório
+
+-   Linguagem utilizada
+
+-   Formato de saída do relatório
+
+-   Temas padronizados
+
+-   Controle de exibição de códigos
+
+## Passo 03: importar os dados
+
+Para importar os dados a serem utilizados no relatório é necessário criar uma célula de código Python e escrever o código adequado de importação de dados, tal como:
+
+![Criando célula de código para importar dados](imgs/passo03.png){fig-align="center"}
+
+Ao clicar em "Run Cell" o resultado do código é exibido no próprio VS Code (Python e Quarto devem estar instalados e configurados para isso funcionar).
+
+## Passo 04: criar análises dos dados
+
+Em seguida vamos criar algumas análises simples dos dados para colocar neste relatório de exemplo:
+
+1.  Uma gráfico de rentabilidade acumulada;
+2.  Uma tabela com a rentabilidade histórica
+3.  Índices de Risco-Retorno
+
+A análise criada de exemplo para este exercício pode ser acessada através do arquivo relatorio.qmd, e o usuário poderá replicar os códigos conforme o documento.
+
+## Passo 05: compilar o relatório
+
+Uma vez que o relatório está produzido, basta compilá-lo para gerar o arquivo final (HTML ou outro definido no início). Para isso é necessário acessar através do terminal (atalho `Ctrl + '`) a pasta onde o relatório está localizado e executar o comando de renderização, conforme abaixo:
+
+![Compilando relatório com comando no terminal](imgs/passo05.png){fig-align="center"}
+
+O nome do arquivo final salvo na mesma pasta é "relatorio.html", que você pode abrir em qualquer navegador de internet para ver o resultado:
+
+![](imgs/relatorio.png){fig-align="center"}
+
+Este relatório é bem simples e básico, serve apenas para demonstrar o fluxo de trabalho com o Quarto + Python. Dá para criar relatórios mais completos, complexos e personalizados. Para saber mais veja o curso de [**Produção de Relatórios Automáticos usando Python**](https://analisemacro.com.br/curso/producao-de-relatorios-automaticos-usando-python/)**.**
+
+## Conclusão
+
+Neste texto mostramos que dá pra enterrar aquele seu relatório manual no Excel e automatizar toda a rotina de análise de dados usando o Python + Quarto. Mostramos um exemplo de relatório de câmbio com dados do Banco Central.

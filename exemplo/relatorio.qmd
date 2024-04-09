@@ -1,0 +1,179 @@
+---
+title: "Relatório de Ações 💸"
+subtitle: "Análise da ITSA4"
+author: "Análise Macro"
+date: today
+lang: pt
+format: html
+theme: 
+    light: flatly
+    dark: darkly
+execute: 
+  echo: false
+  warning: false
+---
+
+Este relatório apresenta dados sobre a evolução da ação ITSA4. É apresentado abaixo a rentabilidade histórica da ação, a volatilidade e o Índice de Sharpe.
+
+```{python}
+# Bibliotecas
+import pandas as pd
+import numpy as np
+import yfinance as yf
+import plotly.graph_objs as go
+from bcb import sgs
+```
+
+```{python}
+# Obter dados da ITSA4 do Yahoo Finance
+ticker = 'ITSA4.SA'
+data = yf.download(ticker, end='2024-04-01', progress = False)
+
+# Taxa de juros - CDI %a.d. periodicidade diária
+rf = sgs.get({"cdi": 12}, end = '2024-04-01')
+```
+
+```{python}
+# Rentabilidade Acumulada Histórica
+# Calcular os retornos diários
+data['retorno_diario'] = data['Adj Close'].pct_change()
+
+# Função para calcular a rentabilidade acumulada
+def calcular_rentabilidade_acumulada(df):
+    df = df.assign(retorno_acumulado = (((1 + df['retorno_diario']).cumprod()) - 1) * 100)
+    return df['retorno_acumulado']
+```
+
+## Gráfico de Rentabilidade
+
+```{python}
+# Calcular a rentabilidade acumulada
+data['Rentabilidade_Acumulada'] = calcular_rentabilidade_acumulada(data)
+
+# Gráfico da rentabilidade acumulada
+fig1 = go.Figure()
+fig1.add_trace(go.Scatter(x=data.index, y=data['Rentabilidade_Acumulada'].round(2), mode='lines', name='Rentabilidade Acumulada'))
+fig1.update_layout(title='Rentabilidade Acumulada da ITSA4', xaxis_title='Data', yaxis_title='%')
+
+# Mostrar o gráfico
+fig1.show()
+```
+
+## Rentabilidade Histórica
+
+```{python}
+# Calcular rentabilidade acumulada para diferentes períodos
+## Calcular a rentabilidade acumulada total
+rentabilidade_total = calcular_rentabilidade_acumulada(data)[-1]
+
+# Calcular a rentabilidade acumulada nos últimos meses específicos
+## Último mês
+data_last_month = data.loc[(data.index >= data.index[-1] - pd.DateOffset(months=1)) & (data.index <= data.index[-1])]
+rentabilidade_last_month = calcular_rentabilidade_acumulada(data_last_month)[-1]
+
+# Últimos 3 meses
+data_last_3_months = data.loc[(data.index >= data.index[-1] - pd.DateOffset(months=3)) & (data.index <= data.index[-1])]
+rentabilidade_last_3_months = calcular_rentabilidade_acumulada(data_last_3_months)[-1]
+
+# Últimos 6 meses
+data_last_6_months = data.loc[(data.index >= data.index[-1] - pd.DateOffset(months=6)) & (data.index <= data.index[-1])]
+rentabilidade_last_6_months = calcular_rentabilidade_acumulada(data_last_6_months)[-1]
+
+# Últimos 12 meses
+data_last_12_months = data.loc[(data.index >= data.index[-1] - pd.DateOffset(months=12)) & (data.index <= data.index[-1])]
+rentabilidade_last_12_months = calcular_rentabilidade_acumulada(data_last_12_months)[-1]
+
+# Últimos 24 meses
+data_last_24_months = data.loc[(data.index >= data.index[-1] - pd.DateOffset(months=24)) & (data.index <= data.index[-1])]
+rentabilidade_last_24_months = calcular_rentabilidade_acumulada(data_last_24_months)[-1]
+
+# Criar uma tabela com os dados dos últimos meses
+tabela_ultimos_meses = pd.DataFrame({
+    'Período': ['Último Mês', 'Últimos 3 Meses', 'Últimos 6 Meses', 'Últimos 12 Meses', 'Últimos 24 Meses'],
+    'Rentabilidade Acumulada (%)': [rentabilidade_last_month, rentabilidade_last_3_months,
+                                 rentabilidade_last_6_months, rentabilidade_last_12_months,
+                                 rentabilidade_last_24_months]
+})
+
+tabela_ultimos_meses.round(2)
+```
+
+```{python}
+# Calcular a volatilidade anualizada para todo o período
+volatilidade_total = data['retorno_diario'].std() * (252 ** 0.5)  # 252 dias úteis em um ano
+```
+
+```{python}
+# Junta os data frames
+returns_rf =  (
+    data.merge(rf, left_index = True, right_index = True)
+    .assign(cdi = lambda x: x.cdi / 100)
+    .dropna()
+    )
+    
+# Cria a função para calcular o sharpe diário
+def sharpe(returns, rf):
+    xr = returns - rf # diferencial
+    mean_r = np.mean(xr) # diferencial esperado
+    sd_r = np.std(xr, ddof = 1) # desvio padrão
+    sr = mean_r / sd_r # sharpe
+    return sr
+
+# Sharpe Anualizado
+sr = sharpe(returns = returns_rf['retorno_diario'], rf = returns_rf['cdi']) * np.sqrt(252)
+
+# Calcula o Sharpe móvel anualizado
+sr_movel = (
+            returns_rf['retorno_diario'] # valores dos retornos
+            .rolling(252) # aplica janela de 252 dias fixa
+            .apply(sharpe, kwargs={'rf': returns_rf['cdi']}) # aplica a função sharpe sobre a amostra
+            .dropna() # retira as 252 primeiras obs. faltantes
+            ) * np.sqrt(252)
+
+sr_df = pd.DataFrame({
+    'Índice de Sharpe': sr_movel
+})
+
+
+```
+
+## Índices de Risco-Retorno
+
+```{python}
+tabela_indic = pd.DataFrame({
+    'Índice': ['Índice de Sharpe', 'Volatilidade', 'Rentabilidade Total'],
+    'Valor': [sr, volatilidade_total, rentabilidade_total]
+})
+
+tabela_indic.round(2)
+```
+
+::: {.grid}
+
+::: {.g-col-6}
+### Volatilidade Anualizada Móvel
+```{python}
+# Volatilidade
+# Calcular a volatilidade anualizada em janelas deslizantes de 22 dias
+volatilidade_movel = data['retorno_diario'].rolling(window=22).std() * (252 ** 0.5)
+
+# Criar gráfico com Plotly
+fig2 = go.Figure()
+fig2.add_trace(go.Scatter(x=data.index, y=volatilidade_movel.round(2) * 100, mode='lines', name='Volatilidade Móvel (22 dias)'))
+fig2.update_layout(title='',
+                  xaxis_title='Data', yaxis_title='%')
+```
+:::
+
+::: {.g-col-6}
+### Índice de Sharpe Anualizado Móvel
+```{python}
+# Criar gráfico com Plotly
+fig3 = go.Figure()
+fig3.add_trace(go.Scatter(x=sr_df.index, y=sr_df['Índice de Sharpe'].round(2), mode='lines', name='Índice de Sharpe Móvel (22 dias)'))
+fig3.update_layout(title='',
+                  xaxis_title='Data', yaxis_title='')
+```
+:::
+
+:::
